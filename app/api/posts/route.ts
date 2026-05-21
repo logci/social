@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import clientPromise from '@/lib/mongodb';
+import getMongoClient from '@/lib/mongodb';
 
 const dbName = process.env.MONGODB_DB_NAME || 'cjp_social';
 
 export async function GET() {
-  const client = await clientPromise;
+  const client = await getMongoClient();
   const db = client.db(dbName);
   const posts = await db
     .collection('posts')
@@ -23,7 +23,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'mediaUrl is required.' }, { status: 400 });
   }
 
-  const client = await clientPromise;
+  const client = await getMongoClient();
   const db = client.db(dbName);
 
   const result = await db.collection('posts').insertOne({
