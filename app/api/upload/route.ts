@@ -11,6 +11,7 @@ export async function POST(req: NextRequest) {
 
     const uploadForm = new FormData();
     uploadForm.append('reqtype', 'fileupload');
+    // Intentionally omit userhash for anonymous uploads.
     // Catbox expects a real multipart file part with a filename.
     // Rebuild as a Blob to ensure Node/undici sends a proper binary payload.
     const bytes = await file.arrayBuffer();
@@ -24,7 +25,9 @@ export async function POST(req: NextRequest) {
 
     const text = (await response.text()).trim();
 
-    if (!response.ok || !text.startsWith('http')) {
+    const isUrl = /^https?:\/\/\S+$/i.test(text);
+
+    if (!response.ok || !isUrl) {
       return NextResponse.json({ error: text || 'Catbox upload failed.' }, { status: 502 });
     }
 
