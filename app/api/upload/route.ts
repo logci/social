@@ -11,7 +11,11 @@ export async function POST(req: NextRequest) {
 
     const uploadForm = new FormData();
     uploadForm.append('reqtype', 'fileupload');
-    uploadForm.append('fileToUpload', file);
+    // Catbox expects a real multipart file part with a filename.
+    // Rebuild as a Blob to ensure Node/undici sends a proper binary payload.
+    const bytes = await file.arrayBuffer();
+    const blob = new Blob([bytes], { type: file.type || 'application/octet-stream' });
+    uploadForm.append('fileToUpload', blob, file.name || 'upload.bin');
 
     const response = await fetch('https://catbox.moe/user/api.php', {
       method: 'POST',
